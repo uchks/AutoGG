@@ -46,7 +46,7 @@ public class GGCommand extends CommandBase {
                         ConfigUtil.setConfigDelay();
                         this.showMessage(TextFormatting.GOLD + "AutoGG " + TextFormatting.GRAY + "delay set to " + TextFormatting.GREEN + AutoGG.getInstance().getDelay() + "s", sender);
                     } catch (NumberFormatException e) {
-                        this.showError("Please use an integer between 1 and 5 seconds.", sender);
+                        this.showError("Please use an integer between 0 and 5 seconds.", sender);
                     }
                     break;
                 }
