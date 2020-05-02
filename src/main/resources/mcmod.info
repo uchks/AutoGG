@@ -1,16 +1,19 @@
 [
-{
-  "modid": "autogg",
-  "name": "Auto GG",
-  "description": "Auto GG for the Hypixel Network.",
-  "version": "2.0.4",
-  "mcversion": "1.12.1",
-  "url": "https://2pi.pw/mods/autogg",
-  "updateUrl": "",
-  "authorList": ["2Pi"],
-  "credits": "2Pi",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": []
-}
+   {
+      "modid": "autogg",
+      "name": "AutoGG",
+      "description": "AutoGG automatically says \"gg\" after a game has ended on Hypixel. Now with updated Triggers and 1.12 - 1.12.2 support! syns will not be updating the port to §eAutoGG 3.0+ by Sk1er §rdue to §4ModCore§r.",
+      "version": "2.0.5",
+      "mcversion": "1.12.2",
+      "url": "https://syns.me/mods",
+      "updateUrl": "",
+      "authorList": [
+         "2Pi",
+         "syns"
+      ],
+      "credits": "Created by 2Pi, updated by syns.",
+      "logoFile": "",
+      "screenshots": [],
+      "dependencies": []
+   }
 ]

@@ -1,14 +1,21 @@
 package pw._2pi.autogg.util;
 
-import pw._2pi.autogg.gg.*;
-import java.io.*;
-import java.nio.file.*;
-import java.nio.charset.*;
+import pw._2pi.autogg.gg.AutoGG;
 
-public class ConfigUtil
-{
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+public class ConfigUtil {
     private static File CONFIG_FILE;
-    
+
+    static {
+        ConfigUtil.CONFIG_FILE = new File(AutoGG.getInstance().getMinecraft() + "/config/autogg_delay.cfg");
+    }
+
     public static void setConfigDelay() {
         try {
             if (!ConfigUtil.CONFIG_FILE.exists()) {
@@ -17,12 +24,11 @@ public class ConfigUtil
             final BufferedWriter bw = new BufferedWriter(new FileWriter(ConfigUtil.CONFIG_FILE));
             bw.write(Integer.toString(AutoGG.getInstance().getDelay()));
             bw.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     public static int getConfigDelay() {
         if (!ConfigUtil.CONFIG_FILE.exists()) {
             setConfigDelay();
@@ -35,19 +41,13 @@ public class ConfigUtil
                 throw new NumberFormatException("Invalid integer");
             }
             return delay;
-        }
-        catch (NumberFormatException nfe) {
+        } catch (NumberFormatException nfe) {
             ConfigUtil.CONFIG_FILE.delete();
             setConfigDelay();
             nfe.printStackTrace();
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
         return AutoGG.getInstance().getDelay();
-    }
-    
-    static {
-        ConfigUtil.CONFIG_FILE = new File(AutoGG.getInstance().getMinecraft().field_71412_D + "/config/autogg_delay.cfg");
     }
 }

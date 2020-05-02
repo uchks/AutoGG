@@ -1,19 +1,19 @@
 package pw._2pi.autogg.gg;
 
-import java.util.*;
-import net.minecraftforge.client.event.*;
-import net.minecraft.util.text.*;
-import net.minecraftforge.fml.common.eventhandler.*;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public class GGListener
-{
+import java.util.Random;
+
+public class GGListener {
     private static String unformattedMessage;
     private Random r;
-    
+
     public GGListener() {
         this.r = new Random();
     }
-    
+
     @SubscribeEvent
     public void onChat(final ClientChatReceivedEvent event) {
         if (!AutoGG.getInstance().isHypixel() || !AutoGG.getInstance().isToggled() || AutoGG.getInstance().isRunning() || AutoGG.getInstance().getTriggers().isEmpty()) {
