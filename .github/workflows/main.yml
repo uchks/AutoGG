@@ -8,13 +8,13 @@ on:
         required: true
         type: number
       mod-id:
-        description: 'The mod id that is part of the built jar file'
+        description: 'Mod ID'
         required: true        
         default: "autogg"
         type: string
-      version-prefix:
-        description: 'If the versions have a prefix like "forge-", it can be added here.'
-        required: false
+      version-number:
+        description: 'Version Number'
+        required: true
         type: string
         default: ''
       create_release:
@@ -35,15 +35,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Get Version
-        id: get_version
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          result-encoding: string
-          script: |
-            return '${{ github.ref }}'.replace('refs/tags/${{ inputs.version-prefix }}', '');
 
       - name: Setup Java ${{ inputs.java-version }}
         uses: actions/setup-java@v3
@@ -66,7 +57,7 @@ jobs:
         if: ${{ inputs.create_release }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}
+          tag_name: ${{ inputs.version-number }}
           body: ${{ steps.get_changelog.outputs.result }}
           draft: false
           prerelease: false
