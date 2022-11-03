@@ -1,0 +1,74 @@
+name: Build and Publish AutoGG
+
+on:
+  workflow_dispatch:
+    inputs:
+      java-version:
+        description: 'Java version that should be used to compile the code [8, 16, 17]'
+        required: true
+        type: number
+      mod-id:
+        description: 'The mod id that is part of the built jar file'
+        required: true        
+        default: "autogg"
+        type: string
+      version-prefix:
+        description: 'If the versions have a prefix like "forge-", it can be added here.'
+        required: false
+        type: string
+        default: ''
+      create_release:
+        description: "Create a Draft Release"
+        default: false
+        required: false
+        type: boolean
+
+jobs:
+  publish:
+    name: Publish Github
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Version
+        id: get_version
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return '${{ github.ref }}'.replace('refs/tags/${{ inputs.version-prefix }}', '');
+
+      - name: Setup Java ${{ inputs.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+        
+      - name: Fix 'gradlew' Permissions
+        run: chmod +x gradlew
+
+      - name: Build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
+          
+      - name: Create Release
+        if: ${{ inputs.create_release }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}
+          body: ${{ steps.get_changelog.outputs.result }}
+          draft: false
+          prerelease: false
+          files:  |
+            ./build/libs/*
