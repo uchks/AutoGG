@@ -32,10 +32,6 @@ on:
         required: false
         type: boolean
         default: false
-    secrets:
-      github-token:
-        description: 'GitHub Token'
-        required: true
 
 jobs:
   publish:
@@ -54,7 +50,7 @@ jobs:
         id: get_version
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.github-token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
           script: |
             return '${{ github.ref }}'.replace('refs/tags/${{ inputs.version-prefix }}', '');
