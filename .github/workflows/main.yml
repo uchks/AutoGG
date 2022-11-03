@@ -1,21 +1,59 @@
-name: "Build Mod"
+name: Build and Publish AutoGG
 
 on:
   workflow_dispatch:
     inputs:
-      java-version: 
+      java-version:
         description: 'Java version that should be used to compile the code [8, 16, 17]'
         required: true
         type: number
+      mod-name:
+        description: 'The name that should be added to the title of the Release on Github'
+        required: true
+        default: "AutoGG"
+        type: string
+      mod-id:
+        description: 'The mod id that is part of the built jar file'
+        required: true
+        default: "pw._2pi.autogg"
+        type: string
+      version-prefix:
+        description: 'If the versions have a prefix like "forge-", it can be added here.'
+        required: false
+        type: string
+        default: ''
+      publish-api:
+        description: 'Defines if the release should contain the api jar'
+        required: false
+        type: boolean
+        default: false
+      publish-sources:
+        description: 'Defines if the release should contain the sources jar'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  build:
-    name: Build Mod
+  publish:
+    name: Publish
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      packages: read
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Get Version
+        id: get_version
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.github-token }}
+          result-encoding: string
+          script: |
+            return '${{ github.ref }}'.replace('refs/tags/${{ inputs.version-prefix }}', '');
 
       - name: Setup Java ${{ inputs.java-version }}
         uses: actions/setup-java@v3
@@ -25,20 +63,66 @@ jobs:
 
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
-        
-      - name: fix gradlew permissions...
-        run: chmod 0755 ./gradlew
 
       - name: Build
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
-          
-      - name: Run build with Gradle wrapper
-        run: ./gradlew build --scan
-        
-      - name: Upload build reports
-        uses: actions/upload-artifact@v3
+
+      - name: Get Changelog
+        id: get_changelog
+        run: |
+          content=`cat ./CHANGELOG.md | sed '0,/^## \[${{ steps.get_version.outputs.result }}\]/d' | sed '/^## \[/,$d'`
+          # the following lines are required for multi line files
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of handling multi line file
+          echo "::set-output name=result::$content"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github-token }}
         with:
-          name: build-reports
-          path: build/reports/
+          tag_name: ${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}
+          release_name: ${{ inputs.mod-name }} ${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}
+          body: ${{ steps.get_changelog.outputs.result }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Main Jar
+        id: upload_main_jar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}.jar
+          asset_name: ${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}.jar
+          asset_content_type: application/java-archive
+
+      - name: Upload Api Jar
+        if: ${{ inputs.publish-api }}
+        id: upload_api_jar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}-api.jar
+          asset_name: ${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}-api.jar
+          asset_content_type: application/java-archive
+
+      - name: Upload Sources Jar
+        if: ${{ inputs.publish-sources }}
+        id: upload_sources_jar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}-sources.jar
+          asset_name: ${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}-sources.jar
+          asset_content_type: application/java-archive
