@@ -14,7 +14,7 @@ on:
         type: string
       mod-id:
         description: 'The mod id that is part of the built jar file'
-        required: true
+        required: true        
         default: "pw._2pi.autogg"
         type: string
       version-prefix:
@@ -23,19 +23,23 @@ on:
         type: string
         default: ''
       publish-api:
-        description: 'Defines if the release should contain the api jar'
+        description: 'Contain API-.jar?'
         required: false
         type: boolean
         default: false
       publish-sources:
-        description: 'Defines if the release should contain the sources jar'
+        description: 'Contain Sources-.jar?'
         required: false
         type: boolean
         default: false
+    secrets:
+      github-token:
+        description: 'GitHub Token'
+        required: true
 
 jobs:
   publish:
-    name: Publish
+    name: Publish Github
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -96,7 +100,7 @@ jobs:
         id: upload_main_jar
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.github-token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}.jar
@@ -108,7 +112,7 @@ jobs:
         id: upload_api_jar
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.github-token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}-api.jar
@@ -120,7 +124,7 @@ jobs:
         id: upload_sources_jar
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.github-token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/${{ inputs.mod-id }}-${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}-sources.jar
