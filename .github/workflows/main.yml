@@ -8,9 +8,8 @@ on:
     tags:
       - '*'
   workflow_dispatch:
-  workflow_call:
     inputs:
-      java-version:
+      java-version: 
         description: 'Java version that should be used to compile the code [8, 16, 17]'
         required: true
         type: number
