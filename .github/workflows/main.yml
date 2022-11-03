@@ -61,19 +61,9 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
-
-      - name: Get Changelog
-        id: get_changelog
-        run: |
-          content=`cat ./CHANGELOG.md | sed '0,/^## \[${{ steps.get_version.outputs.result }}\]/d' | sed '/^## \[/,$d'`
-          # the following lines are required for multi line files
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          # end of handling multi line file
-          echo "::set-output name=result::$content"
-
+          
       - name: Create Release
+        if: ${{ inputs.create_release }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ inputs.version-prefix }}${{ steps.get_version.outputs.result }}
@@ -81,4 +71,4 @@ jobs:
           draft: false
           prerelease: false
           files:  |
-            /build/libs/*
+            ./build/libs/*
